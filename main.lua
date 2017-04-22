@@ -1,62 +1,70 @@
 require "lunar" { global_namespace = true, global_vector = true }
 
 local board
+local board_extents
+
+local player_pos = { col = 1, row = 1 }
 
 function love.load(arg)
   math.randomseed(os.time())
   
   love.window.setMode(1200, 900)
   
-  board = lib.world.board.BoardState.new { col_count = 4, row_count = 4 }
-  
-  --[[
-  local walls = board:get_walls()
-  
-  assert(lib.world.mazes.is_passable(walls))
-  
-  for i = 1, 7 do
-    local set = false
-    local working_walls = walls:clone()
-    
-    while not set do
-      assert(lib.world.mazes.is_passable(working_walls))
-      
-      local c = math.random(1, board.metrics.col_count)
-      local r = math.random(1, board.metrics.row_count)
-      local f = math.random(1, 4)
-      
-      if working_walls:has_wall(c, r, f) and not working_walls:get_wall(c, r, f) then
-        working_walls:set_wall(c, r, f, true)
-        
-        if lib.world.mazes.is_passable(working_walls) then
-          set = true
-          walls = working_walls
-        else
-          working_walls = walls:clone()
-        end
-      end
-    end
-  end
-  --]]
+  board = lib.world.board.BoardState.new { col_count = 8, row_count = 8 }
   
   board:set_walls(
     lib.world.mazes.generate_maze {
       col_count = board.metrics.col_count, 
       row_count = board.metrics.row_count, 
-      wall_goal = board.metrics.col_count * board.metrics.row_count })
+      wall_goal = board.metrics.col_count * board.metrics.row_count * 0.65
+    })
+  
+  lib.world.mazes.cull_loose_walls(board.walls)
+  
+  board_extents = lib.graphics.board_view.get_extents(board.metrics, nil, 900/board.metrics.row_count)
 end
 
 function love.update(dt)
   
 end
 
-function love.keypressed(key, code, is_repeat)
+local function move_player(cdiff, rdiff)
   
+  local from = player_pos
+  local to = { col=player_pos.col + cdiff, row=player_pos.row + rdiff }
+  local move_dir = lib.world.walls.direction(from, to)
+  
+  local walls = board:get_walls()
+  
+  if walls:has_wall(from.col, from.row, move_dir) then
+    if walls:get_wall(from.col, from.row, move_dir) == false then
+      player_pos = to
+    end
+  end
 end
 
-function love.draw()
-  local extents = lib.graphics.board_view.BoardExtents.new(board.metrics, nil, 900/4)
+function love.keypressed(key, code, is_repeat)
   
-  lib.graphics.board_view.draw_board(board, extents)
+  if key == 'left' then
+    move_player(-1, 0)
+  elseif key == 'right' then
+    move_player(1, 0)
+  elseif key == 'up' then
+    move_player(0, -1)
+  elseif key == 'down' then
+    move_player(0, 1)
+  end
+
+end
+
+local gfx = love.graphics
+
+function love.draw()
+  lib.graphics.board_view.draw_board(board, board_extents)
+  
+  local pcenter = board_extents:get_center(player_pos.col, player_pos.row)
+  
+  gfx.setColor{ 0xFF, 0xFF, 0xFF }
+  gfx.circle("fill", pcenter.x, pcenter.y, board_extents.col_size * 0.45, 32) 
 end
 

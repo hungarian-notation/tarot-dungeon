@@ -1,5 +1,6 @@
 local BACKGROUND_COLOR = { 0x22, 0x22, 0x22 }
 local WALL_COLOR = { 0xFF, 0xFF, 0xFF }
+local ALT_WALL_COLOR = { 0xFF, 0xFF, 0x11}
 local WALL_WIDTH = 5
 
 local gfx = love.graphics
@@ -21,15 +22,19 @@ function BoardExtents.new(metrics, position, scale)
   extents.metrics = metrics
   extents.pos = vector.clone(position or vector(0, 0)) 
   extents.scale = scale or board_view.DEFAULT_SCALE
-  
   extents:compute()
   
   return extents
 end
 
+function board_view.get_extents(metrics, position, scale)
+	return BoardExtents.new(metrics, position, scale)
+end
+
 function BoardExtents:compute()
   self.col_size = self.scale
   self.row_size = self.scale
+  self.cell_size = vector(self.col_size, self.row_size)
   self.board_width = self.col_size * self.metrics.col_count
   self.board_height = self.row_size * self.metrics.row_count
   self.dim = vector(self.board_width, self.board_height)
@@ -44,30 +49,20 @@ function BoardExtents:get_origin(col, row)
   )
 end
 
-function BoardExtents:get_wall_points(col, row, face)
-  if face == 1 then
-    return { 
-      self:get_origin(col+1, row), 
-      self:get_origin(col+1, row+1)
-    }
-  elseif face == 2 then
-    return {
-      self:get_origin(col, row+1),
-      self:get_origin(col+1, row+1)
-    }
-  elseif face == 3 then
-    return {
-      self:get_origin(col, row),
-      self:get_origin(col, row+1)
-    }
-  elseif face == 4 then
-    return {
-      self:get_origin(col, row),
-      self:get_origin(col+1, row)
-    }
-  else error("face must be 1, 2, 3, or 4")
-  end
+function BoardExtents:get_center(col, row)
+	return self:get_origin(col, row) + (self.cell_size / 2)
 end
+
+function BoardExtents:get_wall_points(col, row, face)
+  
+  local junctions = lib.world.walls.get_junctions(col, row, face)
+  
+  return { 
+    self:get_origin(junctions[1].col, junctions[1].row),
+    self:get_origin(junctions[2].col, junctions[2].row)
+  }
+end
+
 
 function BoardExtents:__index(key)
   if BoardExtents[key] ~= nil then
@@ -143,12 +138,19 @@ function board_view.draw_board(board, extents)
   
   for col = 1, board.metrics.col_count do
     for row = 1, board.metrics.row_count do
+      
       for face = 1, 2 do
         if board:get_wall(col, row, face) then
+          gfx.setColor((not board.walls:is_loose(col, row, face)) and WALL_COLOR or ALT_WALL_COLOR)
           local points = extents:get_wall_points(col, row, face)
           gfx.line(points[1].x, points[1].y, points[2].x, points[2].y)
         end
       end
+      
+      local connections = board.walls:get_connected_cells(col, row)
+      local center = extents:get_center(col, row)
+      
+      gfx.print(tostring(#connections), center.x, center.y)
     end
   end
 end

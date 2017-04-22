@@ -5,12 +5,20 @@ local wall_lib = lib.world.walls
 board.DEFAULT_ROW_COUNT = 4
 board.DEFAULT_COL_COUNT = 4
 
+--[[
+
 function board._orient_is_vert(orient)
 	local is_vert = orient:sub(1,1):lower() == 'v'
   local is_horiz = orient:sub(1,1):lower() == 'h'
   assert((is_vert and not is_horiz) or (is_horiz and not is_vert))
   return is_vert
 end
+
+--]]
+
+-- |Utility Functions|
+
+
 
 function board.get_metrics(args)
   if type(args) == 'number' then
@@ -25,7 +33,6 @@ function board.get_metrics(args)
   metrics.row_count = args.row_count or board.DEFAULT_ROW_COUNT
   metrics.vertical_walls = metrics.col_count - 1
   metrics.horizontal_walls = metrics.row_count - 1
-  
   
   return metrics
 end
@@ -56,27 +63,27 @@ function BoardState:clear_cells()
 end
 
 function BoardState:clear_walls()
-  self._walls = wall_lib.Walls.new { cols = self.metrics.col_count, rows = self.metrics.row_count }
+  self.walls = wall_lib.Walls.new { cols = self.metrics.col_count, rows = self.metrics.row_count }
 end
 
 function BoardState:get_wall(...)
-	return self._walls:get_wall(...)
+	return self.walls:get_wall(...)
 end
 
 function BoardState:set_wall(...)
-	return self._walls:set_wall(...)
+	return self.walls:set_wall(...)
 end
 
 function BoardState:get_walls()
-	return self._walls:clone()
+	return self.walls:clone()
 end
 
 function BoardState:set_walls(walls)
-  self._walls = walls:clone()
+  self.walls = walls:clone()
 end
 
 function BoardState:has_wall(...)
-	return self._walls:has_wall(...)
+	return self.walls:has_wall(...)
 end
 
 return board

@@ -38,6 +38,33 @@ function wall_lib.direction(from_cell, to_cell)
   end
 end
 
+local def_cell = lib.world.cell.create
+
+function wall_lib.get_junctions(col, row, face)
+  if face == 1 then
+    return { 
+      def_cell(col+1, row), 
+      def_cell(col+1, row+1)
+    }
+  elseif face == 2 then
+    return {
+      def_cell(col, row+1),
+      def_cell(col+1, row+1)
+    }
+  elseif face == 3 then
+    return {
+      def_cell(col, row),
+      def_cell(col, row+1)
+    }
+  elseif face == 4 then
+    return {
+      def_cell(col, row),
+      def_cell(col+1, row)
+    }
+  else error("face must be 1, 2, 3, or 4")
+  end
+end
+
 -- |Type:| **Walls**
 -- 
 -- Maintains the state of the walls between cells in a grid. This type
@@ -88,6 +115,42 @@ function Walls:clear_walls()
   end
 end
 
+-- _Walls::_ **count_junction**
+-- Counts the number of walls that intersect at the origin of a cell.
+
+function Walls:count_junction(col, row)
+  local count = 0
+  
+  if self:get_wall(col, row, 3) then count = count + 1 end
+  if self:get_wall(col, row, 4) then count = count + 1 end
+  if self:get_wall(col - 1, row - 1, 1) then count = count + 1 end
+  if self:get_wall(col - 1, row - 1, 2) then count = count + 1 end
+  
+  return count
+end
+
+-- _Walls::_ **is_loose**
+-- Tests if the specified wall is loose; i.e. not connected to any other wall.
+
+function Walls:is_loose(col, row, face)
+  if not self:get_wall(col, row, face) then
+    error("no wall in that position")
+  else
+    local junctions = wall_lib.get_junctions(col, row, face)
+    local left = self:count_junction(junctions[1].col, junctions[1].row)
+    local right = self:count_junction(junctions[2].col, junctions[2].row)
+    return left == 1 and right == 1
+  end
+end
+
+function Walls:has_cell(...)
+  local cell = def_cell(...)
+  
+	return 
+    cell.col >= 1 and cell.col <= self.col_count and
+    cell.row >= 1 and cell.row <= self.row_count
+end
+
 function Walls:has_wall(col, row, face)
 	col, row, face = wall_lib.normalize(col, row, face)
   
@@ -122,6 +185,28 @@ function Walls:get_wall(col, row, face)
   else
     return nil
   end
+end
+
+function Walls:is_passable(col, row, face)
+	return self:get_wall(col, row, face) == false
+end
+
+function Walls:get_connected_cells(col, row)
+	local cells = {}
+  local origin_cell = def_cell(col, row)
+  
+  local function try(cdiff, rdiff)
+    local adjacent_cell = def_cell(col+cdiff, row+rdiff)
+    local dir = wall_lib.direction(origin_cell, adjacent_cell)
+    
+    if self:is_passable(origin_cell.col, origin_cell.row, dir) then
+      table.insert(cells, adjacent_cell)
+    end
+  end
+  
+  try(1, 0) ; try(-1, 0) ; try(0, 1) ; try(0, -1)
+
+  return cells
 end
 
 return wall_lib

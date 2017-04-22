@@ -71,9 +71,10 @@ end
 
 local COLLISION_FACTOR = 10
 
-function maze_lib.generate_maze(args)
+function maze_lib.generate_maze(args, walls)
   
-  local walls = wall_lib.Walls.new { col_count = args.col_count, row_count = args.row_count }
+  walls = walls or wall_lib.Walls.new { col_count = args.col_count, row_count = args.row_count }
+  
   local working_walls = walls:clone()
   local predicate = args.predicate or function() return true end
   
@@ -104,6 +105,21 @@ function maze_lib.generate_maze(args)
   end
   
   return walls
+end
+
+-- |Function:| **cull_loose_walls**
+-- Removes walls that do not connect to any other wall.
+
+function maze_lib.cull_loose_walls(wall_set)
+  for col = 1, wall_set.col_count do
+    for row = 1, wall_set.row_count do
+      for face = 1, 2 do
+        if wall_set:get_wall(col, row, face) and wall_set:is_loose(col, row, face) then
+          wall_set:set_wall(col, row, face, false)
+        end
+      end        
+    end
+  end
 end
 
 return maze_lib
