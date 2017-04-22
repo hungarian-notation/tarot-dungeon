@@ -4,7 +4,6 @@ local wall_lib = lib.world.walls
 
 board.DEFAULT_ROW_COUNT = 4
 board.DEFAULT_COL_COUNT = 4
-board.DEFAULT_SCALE = 120
 
 function board._orient_is_vert(orient)
 	local is_vert = orient:sub(1,1):lower() == 'v'
@@ -22,58 +21,11 @@ function board.get_metrics(args)
   
 	local metrics = {}
   
-  metrics.scale = args.scale or board.DEFAULT_SCALE
   metrics.col_count = args.col_count or board.DEFAULT_COL_COUNT
   metrics.row_count = args.row_count or board.DEFAULT_ROW_COUNT
   metrics.vertical_walls = metrics.col_count - 1
   metrics.horizontal_walls = metrics.row_count - 1
-  metrics.col_size = metrics.scale
-  metrics.row_size = metrics.scale
-  metrics.board_width = metrics.col_size * metrics.col_count
-  metrics.board_height = metrics.row_size * metrics.row_count
-  metrics.dim = vector(metrics.board_width, metrics.board_height)
   
-  function metrics.at_position(pos)
-    local metrics = setmetatable({}, {__index=metrics})
-    
-    metrics.pos = vector.clone(pos)
-    metrics.min = metrics.pos
-    metrics.max = metrics.min + metrics.dim
-    
-    function metrics:get_origin(col, row)
-    	return vector(
-        (col - 1) * metrics.col_size + metrics.pos.x,
-        (row - 1) * metrics.row_size + metrics.pos.y
-      )
-    end
-    
-    function metrics:get_wall_points(col, row, face)
-    	if face == 1 then
-        return { 
-          self:get_origin(col+1, row), 
-          self:get_origin(col+1, row+1)
-        }
-      elseif face == 2 then
-        return {
-          self:get_origin(col, row+1),
-          self:get_origin(col+1, row+1)
-        }
-      elseif face == 3 then
-        return {
-          self:get_origin(col, row),
-          self:get_origin(col, row+1)
-        }
-      elseif face == 4 then
-        return {
-          self:get_origin(col, row),
-          self:get_origin(col+1, row)
-        }
-      else error("face must be 1, 2, 3, or 4")
-      end
-    end
-    
-    return metrics
-  end
   
   return metrics
 end
@@ -101,7 +53,6 @@ function BoardState:clear_cells()
       self.cells[col][row] = { cell_type = 'normal' }
     end
   end
-  
 end
 
 function BoardState:clear_walls()

@@ -83,8 +83,6 @@ function maze_lib.generate_maze(args)
   local collisions = 0
   
   while placed < args.wall_goal and collisions < args.wall_goal do
-    print(placed , " vs " , collisions)
-    
     local set = false
     
     local col = math.random(1, args.col_count)

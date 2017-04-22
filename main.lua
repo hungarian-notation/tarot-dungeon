@@ -7,7 +7,7 @@ function love.load(arg)
   
   love.window.setMode(1200, 900)
   
-  board = lib.world.board.BoardState.new { col_count = 10, row_count = 10, scale = 48 }
+  board = lib.world.board.BoardState.new { col_count = 4, row_count = 4 }
   
   --[[
   local walls = board:get_walls()
@@ -55,6 +55,8 @@ function love.keypressed(key, code, is_repeat)
 end
 
 function love.draw()
-  lib.graphics.board_painter(board, vector(200, 200))
+  local extents = lib.graphics.board_view.BoardExtents.new(board.metrics, nil, 900/4)
+  
+  lib.graphics.board_view.draw_board(board, extents)
 end
 
