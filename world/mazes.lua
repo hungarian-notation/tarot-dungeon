@@ -34,7 +34,8 @@ function maze_lib.is_passable(walls)
       local face = wall_lib.direction(cell, cell_to)
       
       assert(face)
-      assert(walls:has_wall(cell.col, cell.row, face), "there should be a wall here: (" .. tostring(cell_to.col) .. ", " .. tostring(cell_to.row) .. ")")
+      assert(walls:has_wall(cell.col, cell.row, face), 
+        "there should be a wall here: (" .. tostring(cell_to.col) .. ", " .. tostring(cell_to.row) .. ")")
       
       local passable = walls:has_wall(cell.col, cell.row, face) 
         and not walls:get_wall(cell.col, cell.row, face)

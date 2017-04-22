@@ -1,5 +1,6 @@
-local board = {}
 
+
+local board = {}
 local wall_lib = lib.world.walls
 
 board.DEFAULT_ROW_COUNT = 4
@@ -17,8 +18,6 @@ end
 --]]
 
 -- |Utility Functions|
-
-
 
 function board.get_metrics(args)
   if type(args) == 'number' then
