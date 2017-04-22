@@ -1,9 +1,9 @@
 local CONFIG = {}
 
 CONFIG.BOARD = { 
-  COL_COUNT     = 7, 
-  ROW_COUNT     = 7,
-  SCALE         = 900 / 7,
+  COL_COUNT     = 5, 
+  ROW_COUNT     = 5,
+  SCALE         = 900 / 5,
   WALL_DENSITY  = 0.65 
 }
 

@@ -7,6 +7,20 @@ function love.load(arg)
   math.randomseed(os.time())
   love.window.setMode(1200, 900)
   controller = lib.world.director.Context.create()
+  
+  local grid = lib.util.grid.new(100, 100)
+  
+  for cell in grid:cells() do 
+    grid:set(cell, grid:_indexof(cell))
+  end
+  
+  
+  local copy = lib.util.grid.new(grid)
+  grid:clear()
+  
+  for cell in copy:cells() do
+    print(cell, copy:get(cell))
+  end
 end
 
 function love.update(dt)

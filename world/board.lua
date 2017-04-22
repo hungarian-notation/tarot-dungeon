@@ -62,7 +62,7 @@ function BoardState:clear_cells()
 end
 
 function BoardState:clear_walls()
-  self.walls = wall_lib.Walls.new { cols = self.metrics.col_count, rows = self.metrics.row_count }
+  self.walls = wall_lib.WallGrid.new { cols = self.metrics.col_count, rows = self.metrics.row_count }
 end
 
 function BoardState:get_wall(...)

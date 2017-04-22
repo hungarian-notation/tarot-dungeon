@@ -136,6 +136,27 @@ function board_view.draw_board(board, extents)
   gfx.setColor(WALL_COLOR)
   gfx.setLineWidth(WALL_WIDTH)
   
+  for cell in board.walls:cells() do
+    local col = cell.col
+    local row = cell.row
+    
+    for face = 1, 2 do
+      if board:get_wall(col, row, face) then
+        gfx.setColor((not board.walls:is_loose(col, row, face)) and 
+          WALL_COLOR or ALT_WALL_COLOR)
+        local points = extents:get_wall_points(col, row, face)
+        gfx.line(points[1].x, points[1].y, points[2].x, points[2].y)
+      end
+    end
+    
+    local connections = board.walls:get_connected_cells(col, row)
+    local center = extents:get_center(col, row)
+    
+    gfx.print(tostring(#connections), center.x, center.y)
+  end
+  
+  --[[
+  
   for col = 1, board.metrics.col_count do
     for row = 1, board.metrics.row_count do
       
@@ -153,6 +174,8 @@ function board_view.draw_board(board, extents)
       gfx.print(tostring(#connections), center.x, center.y)
     end
   end
+  
+  --]]
 end
 
 return board_view

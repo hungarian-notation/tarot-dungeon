@@ -36,18 +36,23 @@ function Context.create()
 end
 
 function Context:generate_maze()
+  
 	local maze = lib.world.mazes.generate_maze {
     col_count = self.board.metrics.col_count,
     row_count = self.board.metrics.row_count,
     wall_goal = self.board.metrics.col_count *
       self.board.metrics.row_count * CONFIG.BOARD.WALL_DENSITY
   }
+  
   lib.world.mazes.cull_loose_walls(maze)
   self.board:set_walls(maze)
+  
 end
 
 function Context:move_player(cdiff, rdiff)
+  
   local from = self.player.pos
+  
   local to = { 
     col=self.player.pos.col + cdiff, 
     row=self.player.pos.row + rdiff 
@@ -62,6 +67,7 @@ function Context:move_player(cdiff, rdiff)
       self.player.pos = to
     end
   end
+  
 end
 
 return director

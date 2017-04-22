@@ -11,6 +11,7 @@ function maze_lib.is_passable(walls)
   local visits = 0
   local visited = {}
   local stack = {}
+
   
   local function is_cell(cell)
     return cell.col >= 1 and cell.col <= walls.col_count
@@ -72,14 +73,15 @@ end
 
 local COLLISION_FACTOR = 10
 
-function maze_lib.generate_maze(args, walls)
+function maze_lib.generate_maze(args, opt_walls)
   
-  walls = walls or wall_lib.Walls.new { col_count = args.col_count, row_count = args.row_count }
+  local wall_grid = opt_walls or 
+    wall_lib.WallGrid.new { col_count = args.col_count, row_count = args.row_count }
   
-  local working_walls = walls:clone()
+  local working_walls = wall_grid:clone()
   local predicate = args.predicate or function() return true end
   
-  assert(lib.world.mazes.is_passable(walls))
+  assert(lib.world.mazes.is_passable(wall_grid))
   
   local placed = 0
   local collisions = 0
@@ -97,16 +99,17 @@ function maze_lib.generate_maze(args, walls)
       if lib.world.mazes.is_passable(working_walls) and predicate(working_walls, col, row, face) then
         set = true
         placed = placed + 1
-        walls = working_walls:clone()
+        wall_grid = working_walls:clone()
       else
         collisions = collisions + 1
-        working_walls = walls:clone()
+        working_walls = wall_grid:clone()
       end
     end
   end
   
-  return walls
+  return wall_grid
 end
+
 
 -- |Function:| **cull_loose_walls**
 -- Removes walls that do not connect to any other wall.
@@ -121,6 +124,32 @@ function maze_lib.cull_loose_walls(wall_set)
       end        
     end
   end
+end
+
+-- |Function:| **find_path**
+-- Finds a path between two cells
+
+function maze_lib.find_path(walls, from_cell, to_cell)
+	
+  local vertices_Q = {}
+  local graph = {}
+  
+  for cell in walls:cells() do 
+    graph[cell.col] = graph[cell.col] or {}
+    
+    graph[cell.col][cell.row] = { 
+      dist = math.huge,
+      prev = nil
+    }
+    
+    table.insert(vertices_Q, cell)
+  end
+  
+  
+  local function candidate(cell, distance) 
+    
+  end
+  
 end
 
 return maze_lib
